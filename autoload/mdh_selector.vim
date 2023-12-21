@@ -3,7 +3,7 @@ function! s:get_markdown_header() abort
 
     " TODO #, ## ではなく | ─ のツリー表示だとわかりやすそう
     for line in getline(1, "$")
-        if line[0:2] == "fun"
+        if line[0] == "#"
             call add(lines, line)
         endif
     endfor
