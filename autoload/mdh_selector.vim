@@ -1,15 +1,15 @@
-
 function! s:get_markdown_header() abort
+
     let lines = []
     let line_number = 0
 
-    " TODO #, ## ではなく | ─ のツリー表示だとわかりやすそう
+    " TODO #, ## ではなく ツリー表示などだとわかりやすそう
     for line in getline(1, "$")
 
-        let line_number += 1
+        let l:line_number = l:line_number + 1
 
-        if line[0] == "f"
-            call add(lines, {'number': line_number, 'line': line})
+        if line[0] == "#"
+            call add(lines, {'number': l:line_number, 'line': line})
         endif
     endfor
 
@@ -17,23 +17,33 @@ function! s:get_markdown_header() abort
 
 endfunction
 
-function! s:change_cursor(id, result) abort
+function! s:change_cursor(id, selected_number, headers) abort
 
-    if a:result > -1
+    call cursor(a:headers[a:selected_number - 1].number, 0)
 
-        let row = search(s:headers[a:result - 1], "cn")
-
-        if row > 0
-            call cursor(row, 0)
-        endif
-    endif
 endfunction
 
 function! mdh_selector#popup() abort
-    let s:headers = s:get_markdown_header()
 
-    call popup_menu(s:headers['line'],
-                    \ #{ callback: 's:change_cursor' })
+    let headers = s:get_markdown_header()
+
+    let l:callback = {'arg': headers}
+    function l:callback.funcall(id, selected) dict
+        call s:change_cursor(a:id, a:selected, self.arg)
+    endfunction
+
+    if empty(headers)
+        echo "There is no header."
+    else
+        let header_list = []
+
+        for header in headers
+            call add(header_list, header.line)
+        endfor
+
+        call popup_menu(header_list,
+                        \ #{ callback: l:callback.funcall })
+    endif
 
 endfunction
 
